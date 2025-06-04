@@ -3,14 +3,18 @@ package com.hack.rule_evaluation_engine_service.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.hack.rule_evaluation_engine_service.model.ChatMessage;
 import com.hack.rule_evaluation_engine_service.model.ChatRequest;
-import java.util.List;
 
+import java.util.*;
+
+
+@Slf4j
 @Service
 public class ChatService {
 
@@ -26,6 +30,15 @@ public class ChatService {
     @Value("${azure.openai.api-version}")
     private String apiVersion;
 
+    @Value("${azure.openapi.search.apikey}")
+    private String searchApiKey;
+
+    @Value("${azure.openapi.indexName}")
+    private String indexName;
+
+    @Value("${azure.openapi.search.endpoint}")
+    private String searchEndpoint;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String chat(String prompt) throws JsonProcessingException {
@@ -37,9 +50,40 @@ public class ChatService {
         headers.setBearerAuth(apiKey);  // Azure OpenAI uses API key as Bearer token
         headers.set("api-key", apiKey);
 
-        ChatRequest body = new ChatRequest(List.of(new ChatMessage("user", prompt)));
 
-        HttpEntity<ChatRequest> entity = new HttpEntity<>(body, headers);
+
+
+        Map<String, Object> requestBody = new HashMap<>();
+
+        // Messages array
+        List<Map<String, String>> messages = new ArrayList<>();
+        Map<String, String> message = new HashMap<>();
+        message.put("role", "user");
+        message.put("content", prompt);
+        messages.add(message);
+        requestBody.put("messages", messages);
+
+        // Data source configuration
+        Map<String, Object> auth = new HashMap<>();
+        auth.put("type", "api_key");
+        auth.put("key", searchApiKey);
+
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("endpoint", searchEndpoint);
+        parameters.put("index_name", indexName);
+        parameters.put("authentication", auth);
+
+        Map<String, Object> dataSource = new HashMap<>();
+        dataSource.put("type", "azure_search");
+        dataSource.put("parameters", parameters);
+
+        requestBody.put("data_sources", Collections.singletonList(dataSource));
+
+
+        log.info(requestBody.toString());
+
+        HttpEntity<Map<String,Object>> entity = new HttpEntity<>(requestBody, headers);
 
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
