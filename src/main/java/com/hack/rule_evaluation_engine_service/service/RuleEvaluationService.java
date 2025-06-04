@@ -26,7 +26,7 @@ public class RuleEvaluationService {
             if (!firedRule.isResult()) {
                 finalApproval = false;
                 finalDecision = "Declined - Rule failed: " + firedRule.getReason();
-                break; // Stop evaluating further rules if one fails
+//                break; // Stop evaluating further rules if one fails
             }
         }
 
