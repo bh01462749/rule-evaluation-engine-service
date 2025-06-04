@@ -1,5 +1,8 @@
 package com.hack.rule_evaluation_engine_service.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -25,7 +28,7 @@ public class ChatService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public String chat(String prompt) {
+    public String chat(String prompt) throws JsonProcessingException {
         String url = String.format("%s/openai/deployments/%s/chat/completions?api-version=%s",
                 endpoint, deploymentId, apiVersion);
 
@@ -39,6 +42,11 @@ public class ChatService {
         HttpEntity<ChatRequest> entity = new HttpEntity<>(body, headers);
 
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
-        return response.getBody();
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(response.getBody());
+
+
+        return root.path("choices").get(0).path("message").path("content").asText();
     }
 }
