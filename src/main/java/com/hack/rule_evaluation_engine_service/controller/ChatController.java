@@ -13,6 +13,7 @@ import com.hack.rule_evaluation_engine_service.service.ChatService;
 @Slf4j
 @RestController
 @RequestMapping("/api/openai")
+@CrossOrigin(origins = "*")
 public class ChatController {
 
     private final ChatService chatService;

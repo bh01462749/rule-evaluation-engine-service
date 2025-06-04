@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/")
 @Slf4j
+@CrossOrigin(origins = "*")
 public class HomeController {
 
     @GetMapping("/")
