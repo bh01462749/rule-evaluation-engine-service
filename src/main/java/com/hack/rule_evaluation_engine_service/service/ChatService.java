@@ -73,6 +73,14 @@ public class ChatService {
         parameters.put("endpoint", searchEndpoint);
         parameters.put("index_name", indexName);
         parameters.put("authentication", auth);
+        parameters.put("semantic_configuration","rag-9-semantic-configuration");
+        parameters.put("query_type","vector_semantic_hybrid");
+
+        Map<String,String> embedding_dependency = new HashMap<>();
+        embedding_dependency.put("deployment_name","text-embedding-ada-002");
+        embedding_dependency.put("type","deployment_name");
+
+        parameters.put("embedding_dependency",embedding_dependency);
 
         Map<String, Object> dataSource = new HashMap<>();
         dataSource.put("type", "azure_search");
